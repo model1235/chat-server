@@ -42,6 +42,7 @@ public class DefaultInChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("channelActive");
         log.info("this.hash:{}",this.hashCode());
+        ctx.pipeline();
 
     }
 

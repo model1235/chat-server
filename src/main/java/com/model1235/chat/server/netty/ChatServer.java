@@ -2,6 +2,7 @@ package com.model1235.chat.server.netty;
 
 import com.model1235.chat.server.channel.DefaultInChannelHandler;
 import com.model1235.chat.server.channel.DefaultOutChannelHandler;
+import com.model1235.chat.server.pipline.ChatroomPipline;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -34,12 +35,7 @@ public class ChatServer {
                 .channel(NioServerSocketChannel.class)
 //                .childHandler(new StringEncoder())
 //                .childHandler(new JsonObjectDecoder())
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch){
-                        ch.pipeline().addFirst(new DefaultOutChannelHandler(),new DefaultInChannelHandler());
-                    }
-                })
+                .childHandler(new ChatroomPipline())
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -53,7 +49,6 @@ public class ChatServer {
                         }
                     }).sync();
 
-            log.info("future.isSuccess():{}",future.isSuccess());
 
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
