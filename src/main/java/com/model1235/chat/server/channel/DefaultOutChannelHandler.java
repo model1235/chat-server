@@ -1,9 +1,6 @@
 package com.model1235.chat.server.channel;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandler;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
@@ -14,7 +11,7 @@ import java.net.SocketAddress;
  * @description
  */
 @Slf4j
-public class DefaultOutChannelHandler implements ChannelOutboundHandler {
+public class DefaultOutChannelHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) throws Exception {
@@ -44,13 +41,13 @@ public class DefaultOutChannelHandler implements ChannelOutboundHandler {
     @Override
     public void read(ChannelHandlerContext ctx) throws Exception {
         log.info("read");
+        ctx.read();
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         log.info("write:{}",msg);
-        promise.sync();
-        log.info("write finish");
+        ctx.writeAndFlush(msg);
     }
 
     @Override

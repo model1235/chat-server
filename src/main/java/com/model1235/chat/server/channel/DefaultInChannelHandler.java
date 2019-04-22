@@ -59,9 +59,7 @@ public class DefaultInChannelHandler extends ChannelInboundHandlerAdapter {
             log.info("channelRead:{}",s);
             ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
             buffer.writeBytes(s.getBytes("utf-8"));
-            ChannelFuture future = ctx.writeAndFlush(buffer);
-            future.sync();
-            log.info("发送结果:{}",future.isSuccess());
+            ctx.writeAndFlush(buffer);
         }finally {
             ReferenceCountUtil.release(msg);
         }

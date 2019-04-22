@@ -37,7 +37,7 @@ public class ChatServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch){
-                        ch.pipeline().addFirst(new DefaultInChannelHandler());
+                        ch.pipeline().addFirst(new DefaultOutChannelHandler(),new DefaultInChannelHandler());
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
