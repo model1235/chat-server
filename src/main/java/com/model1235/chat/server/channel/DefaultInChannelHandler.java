@@ -2,13 +2,15 @@ package com.model1235.chat.server.channel;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author hl
@@ -18,14 +20,22 @@ import java.nio.charset.Charset;
 @Slf4j
 public class DefaultInChannelHandler extends ChannelInboundHandlerAdapter {
 
+    private List<Channel> lists;
+
+    public DefaultInChannelHandler(List<Channel> lists){
+        this.lists = lists;
+    }
+
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         log.info("handlerAdded");
+        lists.add(ctx.channel());
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         log.info("handlerRemoved");
+        lists.remove(ctx.channel());
     }
 
     @Override
@@ -43,7 +53,6 @@ public class DefaultInChannelHandler extends ChannelInboundHandlerAdapter {
         log.info("channelActive");
         log.info("this.hash:{}",this.hashCode());
         ctx.pipeline();
-
     }
 
     @Override
@@ -54,13 +63,19 @@ public class DefaultInChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try{
-
             ByteBuf msg1 = (ByteBuf) msg;
             String s = msg1.toString(Charset.forName("utf-8"));
+            if(StringUtil.isNullOrEmpty(s)){
+                return;
+            }
             log.info("channelRead:{}",s);
-            ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
-            buffer.writeBytes(s.getBytes("utf-8"));
-            ctx.writeAndFlush(buffer);
+            byte[] bytes = s.getBytes("utf-8");
+            lists.stream().filter(x->!ctx.channel().equals(x))
+                    .forEach(x->{
+                        ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
+                        buffer.writeBytes(bytes);
+                        x.writeAndFlush(buffer);
+                    });
         }finally {
             ReferenceCountUtil.release(msg);
         }
